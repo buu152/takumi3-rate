@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>TAKUMI³ 単曲レート</title>
+
+<style>
+:root{
+  --bg1:#2f3550;
+  --bg2:#0f1117;
+  --card1:rgba(255,255,255,0.10);
+  --card2:rgba(255,255,255,0.06);
+  --panel:rgba(20,24,40,0.92);
+  --panel2:rgba(14,16,26,0.92);
+  --border:rgba(255,255,255,0.10);
+  --text:#ffffff;
+  --muted:rgba(255,255,255,0.78);
+  --accent:rgba(138,180,255,0.55);
+  --accent2:rgba(138,180,255,0.22);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:"Segoe UI","Noto Sans JP",system-ui,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(138,180,255,0.18), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(255,214,61,0.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(107,255,149,0.08), transparent 45%),
+    radial-gradient(circle at top, var(--bg1), var(--bg2));
+  color:var(--text);
+}
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:clamp(10px, 1.8vh, 22px);
+}
+
+.container{
+  width:min(720px, 96vw);
+  padding:clamp(14px, 1.9vh, 26px);
+  background:linear-gradient(180deg,var(--card1),var(--card2));
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+}
+
+h1{
+  text-align:center;
+  font-size:clamp(24px, 3.3vw, 38px);
+  margin:0 0 clamp(10px, 1.4vh, 18px);
+  letter-spacing:0.5px;
+}
+
+label{
+  display:block;
+  font-size:clamp(15px, 2.1vw, 19px);
+  margin:clamp(8px, 1.1vh, 14px) 0 clamp(5px, 0.7vh, 8px);
+  color:var(--muted);
+}
+
+input, select{
+  width:100%;
+  font-size:clamp(15px, 2.3vw, 21px);
+  padding:clamp(9px, 1.1vh, 11px) clamp(11px, 1.3vh, 13px);
+  border-radius:16px;
+  border:1px solid var(--border);
+  outline:none;
+}
+
+/* score */
+#score{
+  background:#ffffff;
+  color:#111111;
+  text-align:center;
+}
+
+/* level list select */
+#levelSelect{
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  color:var(--text);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  text-align:center;
+
+  padding:6px;
+  line-height:1.08;
+  border-radius:18px;
+}
+#levelSelect option{
+  padding:6px 8px;
+  border-radius:10px;
+}
+#levelSelect option:checked{
+  background:var(--accent2);
+  color:#fff;
+}
+#levelSelect option:hover{
+  background:rgba(255,255,255,0.08);
+}
+
+/* focus glow */
+#levelSelect:focus, #score:focus, .dd-btn:focus{
+  border-color:rgba(138,180,255,0.35);
+  box-shadow:
+    0 0 0 4px rgba(138,180,255,0.18),
+    0 10px 30px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* scrollbar for level */
+#levelSelect::-webkit-scrollbar{ width:12px; }
+#levelSelect::-webkit-scrollbar-track{
+  background:rgba(255,255,255,0.06);
+  border-radius:999px;
+}
+#levelSelect::-webkit-scrollbar-thumb{
+  background:rgba(138,180,255,0.45);
+  border-radius:999px;
+  border:3px solid rgba(0,0,0,0);
+  background-clip:padding-box;
+}
+#levelSelect::-webkit-scrollbar-thumb:hover{
+  background:rgba(138,180,255,0.62);
+}
+
+/* ===== カスタムドロップダウン（曲名） ===== */
+.dd{
+  position:relative;
+  width:100%;
+}
+.dd-btn{
+  width:100%;
+  font-size:clamp(15px, 2.3vw, 21px);
+  padding:clamp(9px, 1.1vh, 11px) clamp(11px, 1.3vh, 13px);
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  color:var(--text);
+  text-align:center;
+  cursor:pointer;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.dd-btn .caret{
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  opacity:.85;
+  pointer-events:none;
+}
+.dd-panel{
+  position:absolute;
+  left:0; right:0;
+  top:calc(100% + 10px);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 18px 40px rgba(0,0,0,0.55);
+  padding:8px;
+  max-height:min(42vh, 360px);
+  overflow:auto;
+  display:none;
+  z-index:100;
+}
+.dd.open .dd-panel{ display:block; }
+
+.dd-item{
+  padding:10px 10px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  user-select:none;
+  color:var(--text);
+  font-size:clamp(14px, 2.1vw, 18px);
+}
+.dd-item:hover{ background:rgba(255,255,255,0.08); }
+.dd-item.active{
+  background:rgba(138,180,255,0.22);
+  outline:1px solid rgba(138,180,255,0.30);
+}
+
+/* scrollbar for dd */
+.dd-panel::-webkit-scrollbar{ width:12px; }
+.dd-panel::-webkit-scrollbar-track{
+  background:rgba(255,255,255,0.06);
+  border-radius:999px;
+}
+.dd-panel::-webkit-scrollbar-thumb{
+  background:rgba(138,180,255,0.45);
+  border-radius:999px;
+  border:3px solid rgba(0,0,0,0);
+  background-clip:padding-box;
+}
+.dd-panel::-webkit-scrollbar-thumb:hover{ background:rgba(138,180,255,0.62); }
+
+/* results */
+.result{
+  margin-top:clamp(12px, 1.6vh, 18px);
+  text-align:center;
+}
+.result-label{
+  font-size:clamp(13px, 1.9vw, 17px);
+  color:var(--muted);
+  margin-top:clamp(8px, 1.0vh, 12px);
+}
+.rate{
+  font-size:clamp(32px, 5.8vw, 52px);
+  font-weight:800;
+  margin-top:5px;
+}
+.conv{
+  font-size:clamp(28px, 5.0vw, 44px);
+  font-weight:800;
+  margin-top:5px;
+}
+.rank{
+  font-size:clamp(15px, 2.4vw, 23px);
+  margin-top:clamp(6px, 0.9vh, 10px);
+  opacity:.9;
+}
+
+.rainbow{
+  background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bff95,#6be7ff,#7b6bff,#ff6bdc);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="container">
+    <h1>TAKUMI³ 単曲レート</h1>
+
+    <label for="levelSelect">譜面定数</label>
+    <select id="levelSelect"></select>
+
+    <label>曲名</label>
+    <!-- ✅ 曲名はカスタムUI（白飛びしない） -->
+    <div class="dd" id="songDD">
+      <button class="dd-btn" id="songBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <span id="songBtnText">（曲データなし）</span>
+        <span class="caret">▾</span>
+      </button>
+      <div class="dd-panel" id="songPanel" role="listbox" aria-label="曲名一覧"></div>
+    </div>
+
+    <label for="score">スコア</label>
+    <input id="score" type="number" value="995000" step="100" min="0" max="1000000" />
+
+    <div class="result">
+      <div class="result-label">単曲レート</div>
+      <div id="rate" class="rate">0.0000</div>
+
+      <div class="result-label">レート換算</div>
+      <div id="conv" class="conv">0.000</div>
+
+      <div id="rank" class="rank">RANK —</div>
+    </div>
+  </div>
+</div>
+
+<script src="songData.js"></script>
+
+<script>
+  const levelSelect = document.getElementById("levelSelect");
+  const scoreInput  = document.getElementById("score");
+  const rateEl      = document.getElementById("rate");
+  const convEl      = document.getElementById("conv");
+  const rankEl      = document.getElementById("rank");
+
+  // 曲名カスタムUI
+  const songDD   = document.getElementById("songDD");
+  const songBtn  = document.getElementById("songBtn");
+  const songBtnText = document.getElementById("songBtnText");
+  const songPanel= document.getElementById("songPanel");
+
+  // 13.0〜16.3（昇順）
+  const allLevels = [];
+  for(let l=13.0; l<=16.3+0.0001; l+=0.1) allLevels.push(l.toFixed(1));
+
+  // 縦圧縮：5〜8行
+  function calcLevelSize(){
+    const h = window.innerHeight || 800;
+    let size = Math.round(h / 135);
+    size = Math.max(5, Math.min(8, size));
+    return size;
+  }
+
+  function buildLevelSelect(selected){
+    levelSelect.size = calcLevelSize();
+    levelSelect.innerHTML = "";
+    for(const v of allLevels){
+      const o = document.createElement("option");
+      o.value = v;
+      o.textContent = v;
+      if(v === selected) o.selected = true;
+      levelSelect.appendChild(o);
+    }
+
+    // 選択値を中央寄せ
+    requestAnimationFrame(()=>{
+      const idx = allLevels.indexOf(selected);
+      const half = Math.floor(levelSelect.size / 2);
+      const optH = levelSelect.options[0]?.offsetHeight || 24;
+      levelSelect.scrollTop = Math.max(0, (idx - half) * optH);
+    });
+  }
+
+  // ===== 曲名カスタムDD =====
+  function closeSongDD(){
+    songDD.classList.remove("open");
+    songBtn.setAttribute("aria-expanded", "false");
+  }
+  function openSongDD(){
+    songDD.classList.add("open");
+    songBtn.setAttribute("aria-expanded", "true");
+
+    // 選択中を中央へ
+    const active = songPanel.querySelector(".dd-item.active");
+    if(active) active.scrollIntoView({block:"center"});
+  }
+
+  let currentSong = null;
+
+  function setSong(name){
+    currentSong = name;
+    songBtnText.textContent = name ?? "（曲データなし）";
+    songPanel.querySelectorAll(".dd-item").forEach(el=>{
+      el.classList.toggle("active", el.dataset.value === name);
+    });
+    calc(); // 表示更新（今は曲で計算は変わらないけど将来拡張用）
+  }
+
+  function buildSongList(level){
+    songPanel.innerHTML = "";
+
+    const list = (typeof songData !== "undefined" && songData[level]) ? songData[level] : null;
+
+    if(list && list.length){
+      // 最初の曲を選択
+      currentSong = list[0];
+      songBtnText.textContent = currentSong;
+
+      for(const name of list){
+        const div = document.createElement("div");
+        div.className = "dd-item";
+        div.dataset.value = name;
+        div.textContent = name;
+        if(name === currentSong) div.classList.add("active");
+
+        div.addEventListener("click", ()=>{
+          setSong(name);
+          closeSongDD();
+        });
+
+        songPanel.appendChild(div);
+      }
+    }else{
+      currentSong = null;
+      songBtnText.textContent = "（曲データなし）";
+      const div = document.createElement("div");
+      div.className = "dd-item active";
+      div.dataset.value = "";
+      div.textContent = "（曲データなし）";
+      div.addEventListener("click", closeSongDD);
+      songPanel.appendChild(div);
+    }
+  }
+
+  // ===== レート計算 =====
+  function calc(){
+    let score = Number(scoreInput.value);
+    if(Number.isNaN(score)) return;
+    score = Math.max(0, Math.min(1000000, score));
+    scoreInput.value = score;
+
+    const lv = Number(levelSelect.value);
+    let rate = 0;
+
+    if(score < 800000){
+      rate = 0;
+    }else if(score < 970000){
+      const adj = (score - 800000) / 170000;
+      rate = (lv * adj) / 34;
+    }else{
+      let adj = 0;
+      if(score < 990000) adj = (score - 970000) / 20000;
+      else if(score < 995000) adj = 1 + (score - 990000) / 10000;
+      else if(score < 999000) adj = 1.5 + (score - 995000) / 8000;
+      else if(score < 1000000) adj = 2 + (score - 999000) / 10000;
+      else adj = 2.1;
+
+      rate = (lv + adj) / 34;
+    }
+
+    const conv = rate * 40;
+
+    rateEl.textContent = rate.toFixed(4);
+    convEl.textContent = conv.toFixed(3);
+
+    const rank =
+      score >= 1000000 ? "理論値" :
+      score >= 999000  ? "S+" :
+      score >= 990000  ? "S" :
+      score >= 970000  ? "AAA" :
+      score >= 800000  ? "BB" : "—";
+    rankEl.textContent = "RANK " + rank;
+
+    if(rate >= 0.5){
+      rateEl.classList.add("rainbow");
+      convEl.classList.add("rainbow");
+    }else{
+      rateEl.classList.remove("rainbow");
+      convEl.classList.remove("rainbow");
+    }
+  }
+
+  // ===== 初期化 =====
+  const initialLevel = "15.0";
+  buildLevelSelect(initialLevel);
+  buildSongList(initialLevel);
+  calc();
+
+  // ===== イベント =====
+  levelSelect.addEventListener("change", ()=>{
+    const v = levelSelect.value;
+    buildSongList(v);
+    calc();
+    buildLevelSelect(v); // 中央寄せ維持
+  });
+
+  scoreInput.addEventListener("input", calc);
+
+  songBtn.addEventListener("click", ()=>{
+    if(songDD.classList.contains("open")) closeSongDD();
+    else openSongDD();
+  });
+
+  // 外側クリックで閉じる
+  document.addEventListener("click", (e)=>{
+    if(!songDD.contains(e.target)) closeSongDD();
+  });
+
+  // ESCで閉じる
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape") closeSongDD();
+  });
+
+  // リサイズ対応（行数調整）
+  window.addEventListener("resize", ()=>{
+    const v = levelSelect.value || initialLevel;
+    buildLevelSelect(v);
+  });
+</script>
+</body>
+</html>
