@@ -1485,7 +1485,7 @@ window.songData = [
     "constant": 15.2
   },
   {
-    "title": "ZEUS 666",
+    "title": "ZEUS † 666",
     "diff": "INSANITY",
     "constant": 15.2
   },
@@ -1665,7 +1665,7 @@ window.songData = [
     "constant": 15.5
   },
   {
-    "title": "(kuro+seatrus+D-D-Dice+Halv)",
+    "title": "Wheel of 4 Tune",
     "diff": "3004",
     "constant": 15.6
   },
