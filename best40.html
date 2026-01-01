@@ -1,779 +1,309 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>TAKUMI³ Best40 / CSV</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TAKUMI³ Best40 (CSV)</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#101a2f;
+      --ink:#e8eefc;
+      --muted:#a8b3cf;
+      --line:rgba(255,255,255,.10);
 
-<style>
-:root{
-  --bg1:#2f3550;
-  --bg2:#0f1117;
-  --card1:rgba(255,255,255,0.10);
-  --card2:rgba(255,255,255,0.06);
-  --panel:rgba(20,24,40,0.92);
-  --panel2:rgba(14,16,26,0.92);
-  --border:rgba(255,255,255,0.10);
-  --text:#ffffff;
-  --muted:rgba(255,255,255,0.78);
-  --accent:rgba(138,180,255,0.55);
-  --accent2:rgba(138,180,255,0.22);
-}
+      --master: rgba(160, 110, 255, .25);
+      --insanity: rgba(255, 244, 190, .22);
+      --ravage: rgba(255, 90, 90, .22);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP", sans-serif;
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(98,140,255,.22), transparent 60%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(255,120,220,.18), transparent 55%),
+                  var(--bg);
+      color:var(--ink);
+    }
+    header{
+      padding:18px 16px 8px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.5px;
+    }
+    .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:12px 16px 28px;
+      display:grid;
+      gap:12px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+      backdrop-filter: blur(6px);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .btn:hover{ background: rgba(255,255,255,.10); }
+    input[type="file"]{
+      width: min(520px, 100%);
+    }
+    #dropzone{
+      margin-top:10px;
+      border:1px dashed rgba(255,255,255,.25);
+      border-radius:14px;
+      padding:16px;
+      color:var(--muted);
+      text-align:center;
+      transition: .15s ease;
+    }
+    #dropzone.hover{
+      border-color: rgba(255,255,255,.55);
+      background: rgba(255,255,255,.06);
+      color: var(--ink);
+    }
+    textarea{
+      width:100%;
+      min-height:120px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color: var(--ink);
+      padding:10px;
+      resize:vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Noto Sans Mono", monospace;
+      font-size:12px;
+    }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 980px){
+      .grid2{ grid-template-columns: 1fr 1fr; }
+    }
+    .kpi{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:8px;
+      color: var(--muted);
+      font-size:13px;
+    }
+    .kpi b{ color: var(--ink); }
+    #status{
+      white-space: pre-wrap;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.45;
+    }
+    #status.err{ color: #ffb4b4; }
 
-*{ box-sizing:border-box; }
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      font-size:13px;
+    }
+    thead th{
+      text-align:left;
+      padding:10px 10px;
+      color: var(--muted);
+      font-weight:800;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      background: rgba(15,25,45,.92);
+      backdrop-filter: blur(6px);
+      z-index:2;
+    }
+    tbody td{
+      padding:9px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      vertical-align:top;
+    }
+    tbody tr:last-child td{ border-bottom:none; }
 
-body{
-  margin:0;
-  font-family:"Segoe UI","Noto Sans JP",system-ui,sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(138,180,255,0.18), transparent 55%),
-    radial-gradient(circle at 20% 20%, rgba(255,214,61,0.10), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(107,255,149,0.08), transparent 45%),
-    radial-gradient(circle at top, var(--bg1), var(--bg2));
-  color:var(--text);
-}
+    .diff-master{ background: linear-gradient(90deg, var(--master), transparent 70%); }
+    .diff-insanity{ background: linear-gradient(90deg, var(--insanity), transparent 70%); }
+    .diff-ravage{ background: linear-gradient(90deg, var(--ravage), transparent 70%); }
+    .diff-other{ background: rgba(255,255,255,.03); }
 
-.wrap{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding:clamp(10px, 1.8vh, 22px);
-}
+    .candidate{ opacity:.82; }
+    .missing{ background: rgba(255,70,70,.10); }
 
-.container{
-  width:min(1080px, 96vw);
-  padding:clamp(14px, 1.9vh, 26px);
-  background:linear-gradient(180deg,var(--card1),var(--card2));
-  border:1px solid var(--border);
-  border-radius:22px;
-  box-shadow:0 0 30px rgba(0,0,0,0.6);
-  backdrop-filter: blur(10px);
-}
-
-h1{
-  text-align:center;
-  font-size:clamp(24px, 3.3vw, 38px);
-  margin:0 0 clamp(10px, 1.4vh, 18px);
-  letter-spacing:0.5px;
-}
-
-label{
-  display:block;
-  font-size:clamp(14px, 2.0vw, 18px);
-  margin:clamp(8px, 1.1vh, 14px) 0 clamp(6px, 0.8vh, 10px);
-  color:var(--muted);
-}
-
-/* ===== 共通ナビ（単曲と同じ） ===== */
-.nav{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  align-items:center;
-  margin:-4px 0 clamp(12px, 1.6vh, 18px);
-  flex-wrap:wrap;
-}
-.nav a{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:140px;
-  padding:10px 14px;
-  border-radius:16px;
-  text-decoration:none;
-  font-weight:800;
-  color:var(--text);
-  background:linear-gradient(180deg,var(--panel),var(--panel2));
-  border:1px solid var(--border);
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.28),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-.nav a:hover{ opacity:.92; }
-.nav a:focus{
-  outline:none;
-  border-color:rgba(138,180,255,0.35);
-  box-shadow:
-    0 0 0 4px rgba(138,180,255,0.18),
-    0 10px 30px rgba(0,0,0,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-.nav a.active{
-  background:linear-gradient(180deg, rgba(138,180,255,0.26), rgba(14,16,26,0.92));
-  border-color:rgba(138,180,255,0.30);
-}
-/* =============================== */
-
-.grid{
-  display:grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap:12px;
-  align-items:start;
-}
-@media (max-width: 960px){
-  .grid{ grid-template-columns: 1fr; }
-}
-
-.card{
-  border:1px solid var(--border);
-  border-radius:18px;
-  background:linear-gradient(180deg,var(--card1),var(--card2));
-  box-shadow:0 10px 26px rgba(0,0,0,0.28);
-  backdrop-filter: blur(10px);
-  padding:12px;
-}
-
-h2{
-  margin:0 0 8px;
-  font-size:clamp(16px, 2.2vw, 22px);
-}
-h3{
-  margin:0 0 10px;
-  font-size:clamp(15px, 2.0vw, 18px);
-}
-
-.muted{
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.55;
-}
-
-.row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-  margin-top:10px;
-}
-
-input[type="file"]{
-  width:auto;
-  max-width:100%;
-  color:var(--muted);
-}
-
-button{
-  appearance:none;
-  border:none;
-  cursor:pointer;
-  padding:10px 14px;
-  border-radius:16px;
-  font-weight:800;
-  color:var(--text);
-  background:linear-gradient(180deg,var(--panel),var(--panel2));
-  border:1px solid var(--border);
-  box-shadow:
-    0 10px 26px rgba(0,0,0,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-button:hover{ opacity:.92; }
-button:active{ transform: translateY(1px); }
-button:focus{
-  outline:none;
-  border-color:rgba(138,180,255,0.35);
-  box-shadow:
-    0 0 0 4px rgba(138,180,255,0.18),
-    0 10px 30px rgba(0,0,0,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-
-textarea{
-  width:100%;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:linear-gradient(180deg,var(--panel),var(--panel2));
-  color:var(--text);
-  padding:12px;
-  outline:none;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-  font-size:12px;
-  line-height:1.45;
-  min-height:180px;
-  box-shadow:
-    0 10px 26px rgba(0,0,0,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-textarea:focus{
-  border-color:rgba(138,180,255,0.35);
-  box-shadow:
-    0 0 0 4px rgba(138,180,255,0.18),
-    0 10px 30px rgba(0,0,0,0.30),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-}
-
-.chk{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  color:var(--muted);
-  font-size:12px;
-  user-select:none;
-}
-.chk input{ transform: scale(1.05); }
-
-.log{
-  margin-top:10px;
-  padding:10px 12px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,0.18);
-  color:var(--muted);
-  font-size:12px;
-  white-space:pre-wrap;
-}
-
-.kpi{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:6px;
-}
-.kpi .box{
-  border:1px solid var(--border);
-  background:rgba(0,0,0,0.14);
-  border-radius:16px;
-  padding:10px 12px;
-}
-.k{ font-size:12px; color:var(--muted); }
-.v{ font-size:22px; font-weight:900; margin-top:2px; }
-
-/* ===== tables ===== */
-.section{
-  margin-top:12px;
-}
-.table-wrap{
-  overflow:auto;
-  border-radius:18px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,0.12);
-}
-table{
-  width:100%;
-  border-collapse:separate;
-  border-spacing:0;
-  min-width:860px;
-  font-size:13px;
-}
-th, td{
-  padding:10px 10px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  white-space:nowrap;
-}
-thead th{
-  position:sticky;
-  top:0;
-  z-index:2;
-  background:linear-gradient(180deg, rgba(20,24,40,0.95), rgba(14,16,26,0.95));
-  color:rgba(255,255,255,0.92);
-}
-tbody tr:hover{ background:rgba(255,255,255,0.04); }
-
-.right{ text-align:right; }
-.center{ text-align:center; }
-
-/* difficulty tags */
-.tag{
-  display:inline-block;
-  padding:2px 10px;
-  border-radius:999px;
-  font-weight:900;
-  font-size:12px;
-  line-height:18px;
-  border:1px solid rgba(255,255,255,0.12);
-}
-.tag.master{ background:#7b2cff; color:#fff; }           /* 紫 */
-.tag.insanity{ background:#fff2c8; color:#6b4a00; border-color:rgba(0,0,0,0.12); } /* クリーム */
-.tag.ravage{ background:#e53935; color:#fff; }           /* 赤 */
-
-.note{
-  margin-top:10px;
-  padding:10px 12px;
-  border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,0.03);
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-}
-.badge{
-  display:inline-block;
-  padding:2px 8px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  background:rgba(138,180,255,0.18);
-  border:1px solid rgba(138,180,255,0.28);
-}
-</style>
+    .sectionTitle{
+      display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+      margin:0 0 10px;
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size:16px;
+    }
+    .hint{
+      color: var(--muted);
+      font-size:12px;
+    }
+    footer{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 16px 22px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+    code{ color:#d7e3ff; }
+  </style>
 </head>
-
 <body>
-<div class="wrap">
-  <div class="container">
-    <h1>Best40 / CSV読み込み</h1>
-
-    <div class="nav" aria-label="ページ切替">
-      <a href="index.html">単曲レート</a>
-      <a class="active" href="best40.html">Best40 / CSV</a>
+  <header>
+    <h1>TAKUMI³ Best40（CSV → 自動生成）</h1>
+    <div class="sub">
+      CSVファイル（曲名 / 難易度 / Lv / スコア）から、単曲レートを計算してBest40枠を作ります。<br/>
+      Safari/Chrome対応。<code>#k=</code>（localStorage）と <code>#csv=</code> にも対応。
     </div>
+  </header>
 
-    <div class="grid">
-      <div class="card">
-        <h2>CSVを読み込む</h2>
-        <div class="muted">
-          CSV形式（左から）：<span class="badge">曲名</span>, <span class="badge">難易度名</span>, <span class="badge">定数</span>, …, <span class="badge">スコア</span><br/>
-          ※ bookmarklet は <span class="badge">曲名,難易度名,定数,スコア</span> を送ります
-        </div>
-
-        <div class="row">
-          <input type="file" id="csvFile" accept=".csv,text/csv" />
-          <button id="btnLoadSample" type="button">サンプル貼り付け</button>
-          <button id="btnClear" type="button">クリア</button>
-        </div>
-
-        <div class="row" style="margin-top:10px;">
-          <textarea id="csvText" placeholder="ここにCSVを貼り付けてもOK（bookmarklet経由なら自動入力されます）"></textarea>
-        </div>
-
-        <div class="row">
-          <button id="btnParse" type="button">解析してBest40生成</button>
-
-          <label class="chk">
-            <input type="checkbox" id="chkIgnoreUnknown" checked />
-            songDataに存在しない譜面は無視（推奨）
-          </label>
-        </div>
-
-        <div id="parseLog" class="log">未解析</div>
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <input id="csvFile" type="file" accept=".csv,text/csv" />
+        <button class="btn" id="btnClear">クリア</button>
+        <button class="btn" id="btnCopyBestCSV">Best40をCSVでコピー</button>
       </div>
+      <div id="dropzone">ここにCSVファイルをドラッグ＆ドロップ</div>
 
-      <div class="card">
-        <h2>集計</h2>
-
-        <div class="kpi">
-          <div class="box">
-            <div class="k">Best40 合計</div>
-            <div class="v" id="sumRate">-</div>
+      <div class="grid2" style="margin-top:12px;">
+        <div>
+          <div class="sectionTitle">
+            <h2>貼り付け</h2>
+            <span class="hint">CSV本文をそのまま貼ってOK</span>
           </div>
-          <div class="box">
-            <div class="k">Best40 平均</div>
-            <div class="v" id="avgRate">-</div>
-          </div>
-          <div class="box">
-            <div class="k">40位レート</div>
-            <div class="v" id="cutRate">-</div>
-          </div>
-          <div class="box">
-            <div class="k">表示</div>
-            <div class="v" id="countInfo">-</div>
+          <textarea id="csvPaste" placeholder="&quot;曲名&quot;,&quot;MASTER&quot;,&quot;14+&quot;,&quot;995052&quot; ..."></textarea>
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" id="btnParsePaste">貼り付けを解析</button>
           </div>
         </div>
 
-        <div class="note">
-          候補曲は「40位を更新するために必要なスコア（概算）」も表示します。<br/>
-          ※必要スコアは単曲レートが単調増加である前提で二分探索しています。
+        <div>
+          <div class="sectionTitle">
+            <h2>ステータス</h2>
+            <span class="hint">突合できない行がある場合もここに出ます</span>
+          </div>
+          <div id="status"></div>
+
+          <div class="kpi">
+            <div>score&gt;0: <b id="playedCount">0</b></div>
+            <div>定数突合: <b id="matchedCount">0</b></div>
+            <div>Best40合計: <b id="rateSum">—</b></div>
+            <div>Best40平均: <b id="rateAvg">—</b></div>
+            <div>40位ボーダー: <b id="borderRate">—</b></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="section card">
-      <h2>Best40</h2>
-      <div class="table-wrap">
-        <table id="best40Table">
-          <thead>
-            <tr>
-              <th class="center">#</th>
-              <th>曲名</th>
-              <th>難易度</th>
-              <th class="center">Lv</th>
-              <th class="right">スコア</th>
-              <th class="right">単曲レート</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+    <div class="card">
+      <div class="sectionTitle">
+        <h2>Best40</h2>
+        <span class="hint">並び：単曲レート降順（同率はスコア降順）</span>
       </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:56px;">#</th>
+            <th>曲名</th>
+            <th style="width:110px;">難易度</th>
+            <th style="width:70px;">Lv</th>
+            <th style="width:110px;">スコア</th>
+            <th style="width:70px;">定数</th>
+            <th style="width:80px;">単曲</th>
+          </tr>
+        </thead>
+        <tbody id="best40Body"></tbody>
+      </table>
     </div>
 
-    <div class="section card">
-      <h2>候補曲（Best40外）</h2>
-      <div class="table-wrap">
-        <table id="candidatesTable">
-          <thead>
-            <tr>
-              <th class="center">#</th>
-              <th>曲名</th>
-              <th>難易度</th>
-              <th class="center">Lv</th>
-              <th class="right">現在スコア</th>
-              <th class="right">現在レート</th>
-              <th class="right">枠更新に必要スコア</th>
-              <th class="right">更新後レート</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+    <div class="card">
+      <div class="sectionTitle">
+        <h2>候補（41〜60位）</h2>
+        <span class="hint">「必要スコア」＝ 40位ボーダーを超える目安（概算）</span>
       </div>
-
-      <div class="note">
-        MASTER=紫 / INSANITY=クリーム / RAVAGE=赤 で表示します。<br/>
-        （bookmarklet経由のCSVに定数が入るので songData がなくても動きます）
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:56px;">#</th>
+            <th>曲名</th>
+            <th style="width:110px;">難易度</th>
+            <th style="width:70px;">Lv</th>
+            <th style="width:110px;">スコア</th>
+            <th style="width:70px;">定数</th>
+            <th style="width:80px;">単曲</th>
+            <th style="width:120px;">必要スコア</th>
+          </tr>
+        </thead>
+        <tbody id="candBody"></tbody>
+      </table>
     </div>
 
+    <div class="card">
+      <div class="sectionTitle">
+        <h2>未対応 / 要修正</h2>
+        <span class="hint">曲名・難易度表記揺れ等で定数突合できない行</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>曲名</th>
+            <th style="width:110px;">難易度</th>
+            <th style="width:70px;">Lv</th>
+            <th style="width:110px;">スコア</th>
+            <th>理由</th>
+          </tr>
+        </thead>
+        <tbody id="missingBody"></tbody>
+      </table>
+    </div>
   </div>
-</div>
 
-<script src="songData.js"></script>
-<script>
-/* =========================
-   単曲ページと同じレート式
-   ========================= */
-function calcSingleRateBridge({ level, score }) {
-  let s = Number(score);
-  if (Number.isNaN(s)) return NaN;
-  s = Math.max(0, Math.min(1000000, s));
+  <footer>
+    レート計算式は「TAKUMI³ Wiki* レーティングシステム」の記載に基づく実装です（区分：BB〜AAA〜理論値）。<br/>
+    songData.js の曲名・難易度表記とCSVがズレる場合は「未対応/要修正」に出ます（例：記号違い、全角/半角、カンマなど）。<br/>
+  </footer>
 
-  const lv = Number(level);
-  if (!Number.isFinite(lv)) return NaN;
-
-  let rate = 0;
-
-  if (s < 800000) {
-    rate = 0;
-  } else if (s < 970000) {
-    const adj = (s - 800000) / 170000;
-    rate = (lv * adj) / 34;
-  } else {
-    let adj = 0;
-    if (s < 990000) adj = (s - 970000) / 20000;
-    else if (s < 995000) adj = 1 + (s - 990000) / 10000;
-    else if (s < 999000) adj = 1.5 + (s - 995000) / 8000;
-    else if (s < 1000000) adj = 2 + (s - 999000) / 10000;
-    else adj = 2.1;
-
-    rate = (lv + adj) / 34;
-  }
-  return rate;
-}
-
-/* 定数表記（"14+"等）の解釈：必要なら +0.7 を変更 */
-function parseLevelText(levelText) {
-  const t = String(levelText ?? "").trim();
-  if (!t) return null;
-  const m = t.match(/^(\d+(?:\.\d+)?)\s*\+$/);
-  if (m) return Number(m[1]) + 0.7;
-  const n = Number(t);
-  return Number.isFinite(n) ? n : null;
-}
-
-function normalizeDiff(s) {
-  return String(s ?? "").trim().toUpperCase().replace(/\s+/g, "");
-}
-function diffTagClass(diffName) {
-  const d = normalizeDiff(diffName);
-  if (d.includes("MASTER")) return "master";
-  if (d.includes("INSANITY")) return "insanity";
-  if (d.includes("RAVAGE")) return "ravage";
-  return "";
-}
-
-/* CSVパース（簡易・ダブルクォート対応） */
-function parseCSVText(text) {
-  const rows = [];
-  let cur = "", inQ = false, row = [];
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === '"') {
-      if (inQ && text[i+1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (!inQ && ch === ",") {
-      row.push(cur); cur = "";
-    } else if (!inQ && (ch === "\n" || ch === "\r")) {
-      if (ch === "\r" && text[i+1] === "\n") i++;
-      row.push(cur); cur = "";
-      if (row.some(v => String(v).trim() !== "")) rows.push(row);
-      row = [];
-    } else {
-      cur += ch;
-    }
-  }
-  row.push(cur);
-  if (row.some(v => String(v).trim() !== "")) rows.push(row);
-  return rows;
-}
-
-/* エントリ抽出：曲名,難易度,定数(あれば),...,スコア */
-function extractEntriesFromRows(rows) {
-  const entries = [];
-  for (const r of rows) {
-    if (!r || r.length < 2) continue;
-
-    const songTitle = String(r[0] ?? "").trim();
-    const diffName  = String(r[1] ?? "").trim();
-    if (!songTitle || !diffName) continue;
-
-    // 3列目が定数っぽければ拾う
-    let level = null;
-    if (r.length >= 3) {
-      const lvTry = parseLevelText(r[2]);
-      if (lvTry != null) level = lvTry;
-    }
-
-    // スコア：右端から数値
-    let score = null;
-    for (let i = r.length - 1; i >= 0; i--) {
-      const v = String(r[i] ?? "").trim().replace(/,/g, "");
-      if (/^\d+$/.test(v)) { score = Number(v); break; }
-    }
-    if (score == null) continue;
-
-    entries.push({ songTitle, diffName, level, score });
-  }
-  return entries;
-}
-
-function fmtScore(n) {
-  const x = Number(n);
-  if (!Number.isFinite(x)) return "-";
-  return x.toLocaleString("ja-JP");
-}
-function fmtRate(n) {
-  const x = Number(n);
-  if (!Number.isFinite(x)) return "-";
-  return x.toFixed(4);
-}
-function escapeHtml(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-/* songData 保険（現状使わなくてもOK） */
-function findChart(songTitle, diffName){
-  // songDataが「level -> 曲名配列」形式だと逆引きが難しいためここは未実装のまま
-  // CSVに定数がある運用なら問題なし
-  return null;
-}
-
-function buildRatedList(entries, opts) {
-  const ignoreUnknown = !!opts.ignoreUnknown;
-  const rated = [];
-  let unknown = 0;
-
-  for (const e of entries) {
-    // 1) CSVに定数があるならそれを使う
-    if (e.level != null) {
-      const rate = calcSingleRateBridge({ level: e.level, score: e.score });
-      rated.push({ ...e, rate, unknown:false });
-      continue;
-    }
-
-    // 2) 定数が無い場合は songData 側
-    const chart = findChart(e.songTitle, e.diffName);
-    if (!chart) {
-      unknown++;
-      if (!ignoreUnknown) rated.push({ ...e, level:null, rate:NaN, unknown:true });
-      continue;
-    }
-    const rate = calcSingleRateBridge({ level: chart.level, score: e.score });
-    rated.push({ ...e, level: chart.level, rate, unknown:false });
-  }
-
-  return { rated, unknown };
-}
-
-/* 候補曲：必要スコア（二分探索） */
-function estimateRequiredScore({ targetRate, level, currentScore }) {
-  if (!Number.isFinite(targetRate)) return null;
-  if (!Number.isFinite(Number(level))) return null;
-
-  const maxScore = 1010000;
-  const rateAt = (score) => calcSingleRateBridge({ level, score });
-
-  const curRate = rateAt(currentScore);
-  if (curRate >= targetRate) return { neededScore: currentScore, newRate: curRate };
-
-  const maxRate = rateAt(maxScore);
-  if (maxRate < targetRate) return null;
-
-  let lo = Math.max(0, currentScore);
-  let hi = maxScore;
-  for (let i = 0; i < 28; i++) {
-    const mid = Math.floor((lo + hi) / 2);
-    const r = rateAt(mid);
-    if (r >= targetRate) hi = mid;
-    else lo = mid + 1;
-  }
-  return { neededScore: hi, newRate: rateAt(hi) };
-}
-
-const els = {
-  file: document.getElementById("csvFile"),
-  text: document.getElementById("csvText"),
-  btnSample: document.getElementById("btnLoadSample"),
-  btnClear: document.getElementById("btnClear"),
-  btnParse: document.getElementById("btnParse"),
-  chkIgnoreUnknown: document.getElementById("chkIgnoreUnknown"),
-  log: document.getElementById("parseLog"),
-
-  sumRate: document.getElementById("sumRate"),
-  avgRate: document.getElementById("avgRate"),
-  cutRate: document.getElementById("cutRate"),
-  countInfo: document.getElementById("countInfo"),
-
-  bestBody: document.querySelector("#best40Table tbody"),
-  candBody: document.querySelector("#candidatesTable tbody"),
-};
-
-function renderTables(best40, candidates, cutRate, totalCount) {
-  els.bestBody.innerHTML = "";
-  els.candBody.innerHTML = "";
-
-  best40.forEach((x, idx) => {
-    const tr = document.createElement("tr");
-    const tagCls = diffTagClass(x.diffName);
-    tr.innerHTML = `
-      <td class="center">${idx+1}</td>
-      <td>${escapeHtml(x.songTitle)}</td>
-      <td><span class="tag ${tagCls}">${escapeHtml(x.diffName)}</span></td>
-      <td class="center">${x.level ?? "-"}</td>
-      <td class="right">${fmtScore(x.score)}</td>
-      <td class="right">${fmtRate(x.rate)}</td>
-    `;
-    els.bestBody.appendChild(tr);
-  });
-
-  candidates.forEach((x, idx) => {
-    const tr = document.createElement("tr");
-    const tagCls = diffTagClass(x.diffName);
-    const needStr = x.needed ? fmtScore(x.needed.neededScore) : "-";
-    const newRateStr = x.needed ? fmtRate(x.needed.newRate) : "-";
-    tr.innerHTML = `
-      <td class="center">${idx+1}</td>
-      <td>${escapeHtml(x.songTitle)}</td>
-      <td><span class="tag ${tagCls}">${escapeHtml(x.diffName)}</span></td>
-      <td class="center">${x.level ?? "-"}</td>
-      <td class="right">${fmtScore(x.score)}</td>
-      <td class="right">${fmtRate(x.rate)}</td>
-      <td class="right">${needStr}</td>
-      <td class="right">${newRateStr}</td>
-    `;
-    els.candBody.appendChild(tr);
-  });
-
-  const sum = best40.reduce((a, b) => a + (Number(b.rate) || 0), 0);
-  const avg = best40.length ? sum / best40.length : 0;
-
-  els.sumRate.textContent = fmtRate(sum);
-  els.avgRate.textContent = fmtRate(avg);
-  els.cutRate.textContent = Number.isFinite(cutRate) ? fmtRate(cutRate) : "-";
-  els.countInfo.textContent = `${best40.length} / ${totalCount}`;
-}
-
-function parseAndBuild(){
-  els.log.textContent = "";
-
-  const text = els.text.value || "";
-  const rows = parseCSVText(text);
-  const entries = extractEntriesFromRows(rows);
-
-  const ignoreUnknown = els.chkIgnoreUnknown.checked;
-  const { rated, unknown } = buildRatedList(entries, { ignoreUnknown });
-
-  const ok = rated.filter(x => Number.isFinite(Number(x.rate)));
-  ok.sort((a,b) => (Number(b.rate) || -1) - (Number(a.rate) || -1));
-
-  const best40 = ok.slice(0, 40);
-  const cutRate = best40.length === 40
-    ? Number(best40[39].rate)
-    : (best40[best40.length-1]?.rate ?? NaN);
-
-  const out = ok.slice(40, 120);
-  const candidates = out.map(x => {
-    const needed = (best40.length === 40)
-      ? estimateRequiredScore({ targetRate: cutRate + 1e-10, level: x.level, currentScore: x.score })
-      : null;
-    return { ...x, needed };
-  });
-
-  renderTables(best40, candidates, cutRate, ok.length);
-
-  els.log.textContent =
-`CSV行数: ${rows.length}
-有効エントリ: ${entries.length}
-レート計算できた譜面: ${ok.length}
-未一致: ${unknown}
-Best40: ${best40.length}
-候補表示: ${candidates.length}
-（※ bookmarklet経由なら定数が入るので songData無しでもOK）`;
-}
-
-/* ===== UI wiring ===== */
-els.file.addEventListener("change", async (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
-  const text = await f.text();
-  els.text.value = text;
-});
-
-els.btnSample.addEventListener("click", () => {
-  els.text.value =
-`曲名,難易度名,定数,スコア
-"ARCANAA ?","MASTER","15",995000
-"tundra","INSANITY","14+",971984
-`;
-});
-
-els.btnClear.addEventListener("click", () => {
-  els.text.value = "";
-  els.bestBody.innerHTML = "";
-  els.candBody.innerHTML = "";
-  els.sumRate.textContent = "-";
-  els.avgRate.textContent = "-";
-  els.cutRate.textContent = "-";
-  els.countInfo.textContent = "-";
-  els.log.textContent = "未解析";
-});
-
-els.btnParse.addEventListener("click", parseAndBuild);
-
-/* ===== 追加：#csv= を読み込んで自動反映 ===== */
-(function autoLoadFromHash(){
-  const h = location.hash || "";
-  if (!h.startsWith("#csv=")) return;
-  try{
-    const csv = decodeURIComponent(h.slice(5));
-    els.text.value = csv;
-    els.btnParse.click();
-    history.replaceState(null, "", location.pathname + location.search);
-  }catch(e){
-    els.log.textContent = "hash読込に失敗: " + e;
-  }
-
-/* ===== 追加：window.name からCSVを読み込んで自動反映 ===== */
-(function autoLoadFromWindowName(){
-  const wn = window.name || "";
-  const prefix = "TAKUMI_B40_CSV_V1\n";
-  if (!wn.startsWith(prefix)) return;
-
-  try{
-    const csv = wn.slice(prefix.length);
-    els.text.value = csv;
-    els.btnParse.click();
-
-    // 読み終わったら消す（次回誤爆防止）
-    window.name = "";
-  }catch(e){
-    els.log.textContent = "window.name読込に失敗: " + e;
-  }
-})();
-
-})();
-</script>
+  <!-- Load your dataset first -->
+  <script src="./songData.js"></script>
+  <script src="./best40_app.js"></script>
 </body>
 </html>
