@@ -29,15 +29,39 @@
 
   function nfkc(s){ try { return s.normalize("NFKC"); } catch { return String(s ?? ""); } }
   function normSpace(s){ return nfkc(String(s ?? "")).replace(/\u00A0/g," ").replace(/[ \t]+/g," ").trim(); }
+
+  // ★ 1) normTitle() 置き換え（表記揺れ吸収を強化）
   function normTitle(s){
-    // Keep Japanese/ASCII as-is but normalize spaces and punctuation variants lightly.
-    return normSpace(s)
-      .replace(/\u200B/g,"") // zero-width space
-      .replace(/[’‘]/g,"'")
-      .replace(/[“”]/g,'"')
-      .replace(/，/g,",")
-      ;
+    let t = nfkc(String(s ?? ""));
+
+    // whitespace / invisible
+    t = t.replace(/\u00A0/g," ").replace(/\u200B/g,"");
+    t = t.replace(/[ \t]+/g," ").trim();
+
+    // quote variants
+    t = t.replace(/[’‘]/g,"'").replace(/[“”]/g,'"');
+
+    // punctuation variants
+    t = t.replace(/，/g,",");
+    t = t.replace(/：/g, ":");                 // 全角コロン→半角
+    t = t.replace(/[‐-‒–—―]/g, "-");          // ダッシュ類→-
+    t = t.replace(/（/g,"(").replace(/）/g,")");
+
+    // TAKUMI3 / TAKUMI³ 揺れ吸収（3と³を統一）
+    t = t.replace(/TAKUMI3/gi, "TAKUMI³");
+
+    // ありがちな余計な空白
+    t = t.replace(/\(\s+/g,"(").replace(/\s+\)/g,")");
+    t = t.replace(/\s*-\s*/g,"-");            // " - " → "-"
+    t = t.replace(/\s*:\s*/g, ":");           // " : " → ":"
+
+    // "(TAKUMI³Edit)" 系の揺れを統一
+    t = t.replace(/\(TAKUMI³\s*Edit\)/gi, "(TAKUMI³Edit)");
+    t = t.replace(/\(TAKUMI³\s*mix\)/gi, "(TAKUMI³mix)");
+
+    return t;
   }
+
   function normDiff(s){
     const t = normSpace(s).toUpperCase();
     if (t === "MAS" || t === "MASTER") return "MASTER";
@@ -65,6 +89,21 @@
   function parseHashParams(){
     const h = (location.hash || "").replace(/^#/, "");
     return new URLSearchParams(h);
+  }
+
+  // ★ 2) 別名辞書（最後の取りこぼし用）を追加
+  // まず normTitle() で正規化した後に alias を当てる想定。
+  const TITLE_ALIAS = new Map([
+    // CSV → Wiki の差を吸収（必要に応じて増やす）
+    ["Erwachen(TAKUMI³mix)", "Erwachen(TAKUMI³ mix)"],
+    ["Floor of Lava (TAKUMI³ Edit)", "Floor of Lava (TAKUMI³Edit)"],
+    ['Get Out of This Endmost Dystøpia(Halv\'s "DISΛSTΣR" Remix)',
+     'Get Out of This Endmost Dystøpia (Halv\'s "DISΛSTΣR" Remix)'],
+  ]);
+
+  function canonTitle(s){
+    const t = normTitle(s);
+    return TITLE_ALIAS.get(t) ?? t;
   }
 
   // -------- CSV parsing (quotes, commas) --------
@@ -99,10 +138,13 @@
     const parsed = [];
     for (const r of rows){
       if (!r || r.length < 4) continue;
-      const title = normTitle(r[0]);
+
+      // ★ 3) CSV側：rowsFromCSVText() で normTitle → canonTitle
+      const title = canonTitle(r[0]);
       const diff  = normDiff(r[1]);
       const level = normLevel(r[2]);
       const score = toIntScore(r[3]);
+
       if (!title || !Number.isFinite(score)) continue;
       parsed.push({ title, diff, level, score });
     }
@@ -153,7 +195,8 @@
       const levelRaw = pickField(it, ["level","lv","lvl","diffLevel"]);
       const constRaw = pickField(it, ["constant","const","c","ratingConst","chartConst","ds"]);
 
-      const title = normTitle(titleRaw);
+      // ★ 4) songData側：buildChartIndex() でも normTitle → canonTitle
+      const title = canonTitle(titleRaw);
       if (!title) continue;
 
       const diff = normDiff(diffRaw);
