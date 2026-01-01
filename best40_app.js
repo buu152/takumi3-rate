@@ -1,21 +1,18 @@
-/* takumi3-rate Best40 - Complete
+/* takumi3-rate Best40 - Complete (diagnostic enhanced)
  * - CSV file / paste / hash (#csv= or #k=localStorage key)
  * - Computes single-chart rating and Best40 sum using TAKUMI³ Wiki rating formula
  * - Color-coded difficulties: MASTER=purple, INSANITY=cream, RAVAGE=red
  *
  * Requires: songData.js (loaded before this). If songData is missing or matching fails,
- * the app will still show parsed rows and highlight unmatched charts.
+ * the app will still show parsed rows and highlight unmatched charts with diagnostic reasons.
  */
 
 (() => {
   "use strict";
 
   // -------- Config --------
-  const DEST_SELF = location.origin + location.pathname;
-  const LS_PREFIX = "takumi3_csv_";
   const MAX_SCORE = 1_000_000;
 
-  const DIFF_ORDER = ["RAVAGE", "INSANITY", "MASTER"]; // display grouping (you can change)
   const DIFF_COLORS = {
     MASTER:  "diff-master",
     INSANITY:"diff-insanity",
@@ -30,7 +27,7 @@
   function nfkc(s){ try { return s.normalize("NFKC"); } catch { return String(s ?? ""); } }
   function normSpace(s){ return nfkc(String(s ?? "")).replace(/\u00A0/g," ").replace(/[ \t]+/g," ").trim(); }
 
-  // ★ 1) normTitle() 置き換え（表記揺れ吸収を強化）
+  // 1) normTitle() 置き換え（表記揺れ吸収を強化）
   function normTitle(s){
     let t = nfkc(String(s ?? ""));
 
@@ -47,7 +44,7 @@
     t = t.replace(/[‐-‒–—―]/g, "-");          // ダッシュ類→-
     t = t.replace(/（/g,"(").replace(/）/g,")");
 
-    // TAKUMI3 / TAKUMI³ 揺れ吸収（3と³を統一）
+    // TAKUMI3 / TAKUMI³ 揺れ吸収
     t = t.replace(/TAKUMI3/gi, "TAKUMI³");
 
     // ありがちな余計な空白
@@ -55,7 +52,7 @@
     t = t.replace(/\s*-\s*/g,"-");            // " - " → "-"
     t = t.replace(/\s*:\s*/g, ":");           // " : " → ":"
 
-    // "(TAKUMI³Edit)" 系の揺れを統一
+    // "(TAKUMI³Edit/mix)" 系の揺れを統一
     t = t.replace(/\(TAKUMI³\s*Edit\)/gi, "(TAKUMI³Edit)");
     t = t.replace(/\(TAKUMI³\s*mix\)/gi, "(TAKUMI³mix)");
 
@@ -69,13 +66,11 @@
     if (t === "RAV" || t === "RAVAGE") return "RAVAGE";
     return t || "OTHER";
   }
-  function normLevel(s){
-    return normSpace(s).toUpperCase();
-  }
+  function normLevel(s){ return normSpace(s).toUpperCase(); }
+
   function toIntScore(s){
     const t = normSpace(s).replace(/,/g,"");
-    const m = t.match(/^\d+$/);
-    return m ? Number(t) : NaN;
+    return /^\d+$/.test(t) ? Number(t) : NaN;
   }
   function formatScore(n){
     if (!Number.isFinite(n)) return "";
@@ -86,15 +81,8 @@
     return n.toFixed(d);
   }
 
-  function parseHashParams(){
-    const h = (location.hash || "").replace(/^#/, "");
-    return new URLSearchParams(h);
-  }
-
-  // ★ 2) 別名辞書（最後の取りこぼし用）を追加
-  // まず normTitle() で正規化した後に alias を当てる想定。
+  // 2) 別名辞書（最後の取りこぼし用）
   const TITLE_ALIAS = new Map([
-    // CSV → Wiki の差を吸収（必要に応じて増やす）
     ["Erwachen(TAKUMI³mix)", "Erwachen(TAKUMI³ mix)"],
     ["Floor of Lava (TAKUMI³ Edit)", "Floor of Lava (TAKUMI³Edit)"],
     ['Get Out of This Endmost Dystøpia(Halv\'s "DISΛSTΣR" Remix)',
@@ -104,6 +92,11 @@
   function canonTitle(s){
     const t = normTitle(s);
     return TITLE_ALIAS.get(t) ?? t;
+  }
+
+  function parseHashParams(){
+    const h = (location.hash || "").replace(/^#/, "");
+    return new URLSearchParams(h);
   }
 
   // -------- CSV parsing (quotes, commas) --------
@@ -134,12 +127,11 @@
 
   function rowsFromCSVText(text){
     const rows = parseCSV(text);
-    // Expect 4 columns: title, difficulty, level, score
     const parsed = [];
     for (const r of rows){
       if (!r || r.length < 4) continue;
 
-      // ★ 3) CSV側：rowsFromCSVText() で normTitle → canonTitle
+      // 3) CSV側：normTitle → canonTitle
       const title = canonTitle(r[0]);
       const diff  = normDiff(r[1]);
       const level = normLevel(r[2]);
@@ -153,7 +145,6 @@
 
   // -------- songData indexing (robust against schema differences) --------
   function getSongDataArray(){
-    // Common candidates
     const candidates = [
       window.songData,
       window.SONG_DATA,
@@ -164,7 +155,6 @@
     for (const c of candidates){
       if (Array.isArray(c) && c.length) return c;
     }
-    // If it's an object keyed by title
     if (window.songData && typeof window.songData === "object" && !Array.isArray(window.songData)){
       const vals = Object.values(window.songData);
       if (vals.length && typeof vals[0] === "object") return vals;
@@ -179,12 +169,19 @@
     return null;
   }
 
+  // 4) songData側：normTitle → canonTitle
+  // + 診断用に titleMap を追加（曲名はあるがdiff違いの検出）
   function buildChartIndex(){
     const arr = getSongDataArray();
-    if (!arr) return { map: new Map(), issues: ["songData.js が見つかりませんでした（定数突合なしで表示します）"] };
+    if (!arr) return {
+      map: new Map(),
+      titleMap: new Map(),
+      issues: ["songData.js が見つかりませんでした（定数突合なしで表示します）"]
+    };
 
     const issues = [];
-    const map = new Map();
+    const map = new Map();       // title__diff -> []
+    const titleMap = new Map();  // title -> [] (diff違い検出)
     let added = 0;
 
     for (const it of arr){
@@ -195,27 +192,28 @@
       const levelRaw = pickField(it, ["level","lv","lvl","diffLevel"]);
       const constRaw = pickField(it, ["constant","const","c","ratingConst","chartConst","ds"]);
 
-      // ★ 4) songData側：buildChartIndex() でも normTitle → canonTitle
       const title = canonTitle(titleRaw);
       if (!title) continue;
 
       const diff = normDiff(diffRaw);
       const level = levelRaw != null ? normLevel(levelRaw) : "";
       const constant = constRaw != null ? Number(constRaw) : NaN;
+      if (!Number.isFinite(constant)) continue;
 
-      if (!Number.isFinite(constant)){
-        // Some datasets encode constant inside "level" like "14+"; can't reliably infer.
-        continue;
-      }
+      const item = { title, diff, level, constant, raw: it };
 
-      const key = `${title}__${diff}`; // base key
+      const key = `${title}__${diff}`;
       if (!map.has(key)) map.set(key, []);
-      map.get(key).push({ title, diff, level, constant, raw: it });
+      map.get(key).push(item);
+
+      if (!titleMap.has(title)) titleMap.set(title, []);
+      titleMap.get(title).push(item);
+
       added++;
     }
 
     if (!added) issues.push("songData.js は読み込めていますが、定数フィールドを検出できませんでした（フィールド名が想定外の可能性）");
-    return { map, issues };
+    return { map, titleMap, issues };
   }
 
   function matchChart(chartIndex, row){
@@ -228,10 +226,9 @@
     const exact = candidates.find(c => c.level && normLevel(c.level) === lv);
     if (exact) return exact;
 
-    // If dataset doesn't store level, or no match: if only one, use it
     if (candidates.length === 1) return candidates[0];
 
-    // Heuristic: if lv is like "14+" and dataset levels are numeric "14.7" etc, try map "+" -> ".7"
+    // Heuristic: "14+" -> 14.7
     const plusMap = (s) => {
       const t = normLevel(s);
       if (/^\d+\+$/.test(t)) return Number(t.replace("+",".7"));
@@ -245,25 +242,21 @@
         const got = plusMap(c.level);
         if (!Number.isFinite(got)) continue;
         const d = Math.abs(got - want);
-        if (d < bestDist){
-          bestDist = d; best = c;
-        }
+        if (d < bestDist){ bestDist = d; best = c; }
       }
       if (best) return best;
     }
 
-    // Fallback: choose the highest constant (usually the intended hardest chart for that diff)
+    // Fallback: highest constant
     return candidates.slice().sort((a,b)=>b.constant-a.constant)[0];
   }
 
   // -------- Rating formula (from TAKUMI³ Wiki) --------
-  // Reference: TAKUMI³ Wiki "レーティングシステム"
   function correctionAAAPlus(score){
     if (score >= 1_000_000) return 2.1;
     if (score >= 999_000) return 2 + (score - 999_000) / 10_000;
     if (score >= 995_000) return 1.5 + (score - 995_000) / 8_000;
     if (score >= 990_000) return 1 + (score - 990_000) / 10_000;
-    // 970k ~ 990k
     return (score - 970_000) / 20_000;
   }
 
@@ -272,23 +265,21 @@
     if (score <= 800_000) return 0;
 
     if (score < 970_000){
-      const corr = (score - 800_000) / 170_000; // 970k => 1
+      const corr = (score - 800_000) / 170_000;
       return (constant * corr) / 34;
     }
     const corr = correctionAAAPlus(score);
     return (constant + corr) / 34;
   }
 
-  // Solve minimal score needed for targetRate on a chart constant (monotonic)
   function scoreForTargetRate(constant, targetRate){
     if (!Number.isFinite(constant) || !Number.isFinite(targetRate)) return null;
 
-    // If even theoretical max can't reach
     const maxRate = singleChartRate(constant, 1_000_000);
     if (maxRate < targetRate) return null;
 
     let lo = 0, hi = MAX_SCORE;
-    for (let i=0;i<28;i++){ // enough for int precision
+    for (let i=0;i<28;i++){
       const mid = (lo + hi) >> 1;
       const r = singleChartRate(constant, mid);
       if (r >= targetRate) hi = mid;
@@ -378,12 +369,27 @@
     const matched = [];
 
     for (const r of rows){
-      if (!(r.score > 0)) continue; // played only
+      if (!(r.score > 0)) continue;
+
       const m = matchChart(chartIndex, r);
       if (!m){
-        missing.push({ ...r, reason: "songDataに該当譜面なし（曲名/難易度の表記揺れ or 定数未収録）" });
+        // 診断：同名はある？（diff違い） or 曲自体がない？
+        const sameTitle = chartIndex.titleMap.get(r.title);
+        if (sameTitle && sameTitle.length){
+          const diffs = [...new Set(sameTitle.map(x => x.diff))].join(", ");
+          missing.push({
+            ...r,
+            reason: `同名はsongDataにあるが難易度が違う/未収録（songData側: ${diffs}）`
+          });
+        } else {
+          missing.push({
+            ...r,
+            reason: "songDataに曲名自体が無い（wiki.txt生成範囲不足 or 曲名不一致）"
+          });
+        }
         continue;
       }
+
       const constant = m.constant;
       const rate = singleChartRate(constant, r.score);
       matched.push({ ...r, constant, rate });
@@ -400,7 +406,7 @@
     const borderRate = best40[39]?.rate ?? null;
     if (borderRate != null){
       for (const c of candidates){
-        c.needScore = scoreForTargetRate(c.constant, borderRate + 0.00005); // tiny epsilon to "beat"
+        c.needScore = scoreForTargetRate(c.constant, borderRate + 0.00005);
       }
     } else {
       for (const c of candidates) c.needScore = null;
@@ -410,6 +416,9 @@
     if (missing.length){
       issues.push(`定数突合できなかった行: ${missing.length} 件（下の「未対応/要修正」に表示）`);
     }
+
+    // 追加：songDataの規模を出す（データ不足が即わかる）
+    issues.push(`songData index: title__diff keys=${chartIndex.map.size}, titles=${chartIndex.titleMap.size}`);
 
     return {
       best40,
@@ -433,15 +442,14 @@
     const state = computeFromRows(rows);
     renderTables(state);
 
-    if (state.issues.length){
-      setStatus(`${sourceLabel}: OK（${rows.length}行 / score>0=${state.playedCount} / 突合=${state.matchedCount}）\n- ` + state.issues.join("\n- "), false);
-    } else {
-      setStatus(`${sourceLabel}: OK（${rows.length}行 / score>0=${state.playedCount} / 突合=${state.matchedCount}）`, false);
-    }
+    setStatus(
+      `${sourceLabel}: OK（${rows.length}行 / score>0=${state.playedCount} / 突合=${state.matchedCount}）\n- ` +
+      state.issues.join("\n- "),
+      false
+    );
   }
 
   async function readFile(file){
-    // Use File.text() - handles UTF-8 BOM fine in modern browsers
     return await file.text();
   }
 
@@ -496,7 +504,6 @@
         alert("Best40がまだありません");
         return;
       }
-      // CSV: title,diff,level,score,constant,rate
       const csv = rows.map(r => {
         const [rank,title,diff,lv,score,constant,rate] = r;
         const vals = [title,diff,lv,score.replace(/,/g,""),constant,rate];
