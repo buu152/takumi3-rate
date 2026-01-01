@@ -58,6 +58,45 @@ h1{
   letter-spacing:0.5px;
 }
 
+/* ===== 追加：ページ導線ナビ ===== */
+.nav{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin:-4px 0 clamp(12px, 1.6vh, 18px);
+}
+.nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:140px;
+  padding:10px 14px;
+  border-radius:16px;
+  text-decoration:none;
+  font-weight:800;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.nav a:hover{ opacity:.92; }
+.nav a:focus{
+  outline:none;
+  border-color:rgba(138,180,255,0.35);
+  box-shadow:
+    0 0 0 4px rgba(138,180,255,0.18),
+    0 10px 30px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.nav a.active{
+  background:linear-gradient(180deg, rgba(138,180,255,0.26), rgba(14,16,26,0.92));
+  border-color:rgba(138,180,255,0.30);
+}
+/* ============================ */
+
 label{
   display:block;
   font-size:clamp(15px, 2.1vw, 19px);
@@ -241,6 +280,12 @@ input, select{
 <div class="wrap">
   <div class="container">
     <h1>TAKUMI³ 単曲レート</h1>
+
+    <!-- ✅ 追加：Best40への導線（同じ見た目） -->
+    <div class="nav" aria-label="ページ切替">
+      <a class="active" href="index.html">単曲レート</a>
+      <a href="best40.html">Best40 / CSV</a>
+    </div>
 
     <label for="levelSelect">譜面定数</label>
     <select id="levelSelect"></select>

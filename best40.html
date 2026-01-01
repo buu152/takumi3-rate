@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>TAKUMI³ Best40 / CSV</title>
+
+<style>
+:root{
+  --bg1:#2f3550;
+  --bg2:#0f1117;
+  --card1:rgba(255,255,255,0.10);
+  --card2:rgba(255,255,255,0.06);
+  --panel:rgba(20,24,40,0.92);
+  --panel2:rgba(14,16,26,0.92);
+  --border:rgba(255,255,255,0.10);
+  --text:#ffffff;
+  --muted:rgba(255,255,255,0.78);
+  --accent:rgba(138,180,255,0.55);
+  --accent2:rgba(138,180,255,0.22);
+  --good:rgba(107,255,149,0.20);
+  --warn:rgba(255,214,61,0.16);
+}
+
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:"Segoe UI","Noto Sans JP",system-ui,sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(138,180,255,0.18), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(255,214,61,0.10), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(107,255,149,0.08), transparent 45%),
+    radial-gradient(circle at top, var(--bg1), var(--bg2));
+  color:var(--text);
+}
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:clamp(10px, 1.8vh, 22px);
+}
+
+.container{
+  width:min(1100px, 96vw);
+  padding:clamp(14px, 1.9vh, 26px);
+  background:linear-gradient(180deg,var(--card1),var(--card2));
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+}
+
+h1{
+  text-align:center;
+  font-size:clamp(22px, 3.0vw, 34px);
+  margin:0 0 clamp(10px, 1.4vh, 18px);
+  letter-spacing:0.5px;
+}
+
+/* ===== 共通ナビ（単曲と同じトーン） ===== */
+.nav{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  margin:-4px 0 clamp(12px, 1.6vh, 18px);
+}
+.nav a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:140px;
+  padding:10px 14px;
+  border-radius:16px;
+  text-decoration:none;
+  font-weight:800;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.nav a:hover{ opacity:.92; }
+.nav a:focus{
+  outline:none;
+  border-color:rgba(138,180,255,0.35);
+  box-shadow:
+    0 0 0 4px rgba(138,180,255,0.18),
+    0 10px 30px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.nav a.active{
+  background:linear-gradient(180deg, rgba(138,180,255,0.26), rgba(14,16,26,0.92));
+  border-color:rgba(138,180,255,0.30);
+}
+/* ====================================== */
+
+.grid{
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap:12px;
+  align-items:start;
+}
+@media (max-width: 900px){
+  .grid{ grid-template-columns:1fr; }
+}
+
+.card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:linear-gradient(180deg,var(--card1),var(--card2));
+  box-shadow:0 10px 26px rgba(0,0,0,0.28);
+  backdrop-filter: blur(10px);
+  padding:12px;
+}
+
+h2{
+  margin:0 0 10px;
+  font-size:clamp(16px, 2.2vw, 20px);
+}
+.muted{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-top:10px;
+}
+
+input[type="file"]{
+  width:auto;
+  max-width:100%;
+  color:var(--muted);
+}
+
+button{
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  padding:10px 14px;
+  border-radius:16px;
+  font-weight:800;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--border);
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+button:hover{ opacity:.92; }
+button:active{ transform: translateY(1px); }
+
+textarea{
+  width:100%;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  color:var(--text);
+  padding:12px;
+  outline:none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  font-size:12px;
+  line-height:1.45;
+  min-height:180px;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+textarea:focus{
+  border-color:rgba(138,180,255,0.35);
+  box-shadow:
+    0 0 0 4px rgba(138,180,255,0.18),
+    0 10px 30px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.chk{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  color:var(--muted);
+  font-size:12px;
+}
+.chk input{ transform: scale(1.05); }
+
+.log{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,0.18);
+  color:var(--muted);
+  font-size:12px;
+  white-space:pre-wrap;
+}
+
+.kpi{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:6px;
+}
+.kpi .box{
+  border:1px solid var(--border);
+  background:rgba(0,0,0,0.14);
+  border-radius:16px;
+  padding:10px 12px;
+}
+.k{
+  font-size:12px;
+  color:var(--muted);
+}
+.v{
+  font-size:22px;
+  font-weight:900;
+  margin-top:2px;
+}
+
+/* tables */
+.section{
+  margin-top:12px;
+}
+
+.table-wrap{
+  overflow:auto;
+  border-radius:18px;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,0.12);
+}
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:720px;
+  font-size:13px;
+}
+th, td{
+  padding:10px 10px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  white-space:nowrap;
+}
+thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:linear-gradient(180deg, rgba(20,24,40,0.95), rgba(14,16,26,0.95));
+  color:rgba(255,255,255,0.92);
+}
+tbody tr:hover{
+  background:rgba(255,255,255,0.04);
+}
+
+.right{ text-align:right; }
+.center{ text-align:center; }
+
+/* difficulty tags */
+.tag{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:12px;
+  line-height:18px;
+  border:1px solid rgba(255,255,255,0.12);
+}
+.tag.master{ background:#7b2cff; color:#fff; }
+.tag.insanity{ background:#fff2c8; color:#6b4a00; border-color:rgba(0,0,0,0.12); }
+.tag.ravage{ background:#e53935; color:#fff; }
+
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  background:rgba(138,180,255,0.18);
+  border:1px solid rgba(138,180,255,0.28);
+}
+
+.note{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="container">
+    <h1>Best40 / CSV読み込み</h1>
+
+    <div class="nav" aria-label="ページ切替">
+      <a href="index.html">単曲レート</a>
+      <a class="active" href="best40.html">Best40 / CSV</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>CSVを読み込む</h2>
+        <div class="muted">
+          CSV形式（左から）：<span class="badge">曲名</span>, <span class="badge">難易度名</span>, …, <span class="badge">スコア</span><br/>
+          ※ スコア列は「右端から数値っぽいもの」を自動で拾います（列順が多少違ってもOK）
+        </div>
+
+        <div class="row">
+          <input type="file" id="csvFile" accept=".csv,text/csv" />
+          <button id="btnSample" type="button">サンプル貼り付け</button>
+          <button id="btnClear" type="button">クリア</button>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <textarea id="csvText" placeholder="ここにCSVを貼り付け（貼ったら自動で更新されます）"></textarea>
+        </div>
+
+        <div class="row">
+          <label class="chk">
+            <input type="checkbox" id="chkIgnoreUnknown" checked />
+            songDataに存在しない譜面は無視（推奨）
+          </label>
+
+          <label class="chk">
+            <input type="checkbox" id="chkAuto" checked />
+            自動更新（貼り付け/ファイル選択で即反映）
+          </label>
+
+          <button id="btnParse" type="button">解析してBest40生成</button>
+        </div>
+
+        <div id="parseLog" class="log">未解析</div>
+      </div>
+
+      <div class="card">
+        <h2>集計</h2>
+        <div class="kpi">
+          <div class="box">
+            <div class="k">Best40 合計</div>
+            <div class="v" id="sumRate">-</div>
+          </div>
+          <div class="box">
+            <div class="k">Best40 平均</div>
+            <div class="v" id="avgRate">-</div>
+          </div>
+          <div class="box">
+            <div class="k">40位レート</div>
+            <div class="v" id="cutRate">-</div>
+          </div>
+          <div class="box">
+            <div class="k">表示</div>
+            <div class="v" id="countInfo">-</div>
+          </div>
+        </div>
+
+        <div class="note">
+          候補曲は「40位を更新するために必要なスコア（概算）」も表示します。<br/>
+          ※必要スコアは単曲レートが単調増加である前提で二分探索しています。
+        </div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <h2>Best40</h2>
+      <div class="table-wrap">
+        <table id="best40Table">
+          <thead>
+            <tr>
+              <th class="center">#</th>
+              <th>曲名</th>
+              <th>難易度</th>
+              <th class="center">Lv</th>
+              <th class="right">スコア</th>
+              <th class="right">単曲レート</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section card">
+      <h2>候補曲（Best40外）</h2>
+      <div class="table-wrap">
+        <table id="candidatesTable">
+          <thead>
+            <tr>
+              <th class="center">#</th>
+              <th>曲名</th>
+              <th>難易度</th>
+              <th class="center">Lv</th>
+              <th class="right">現在スコア</th>
+              <th class="right">現在レート</th>
+              <th class="right">枠更新に必要スコア</th>
+              <th class="right">更新後レート</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        MASTER=紫 / INSANITY=クリーム / RAVAGE=赤 で表示します。<br/>
+        songDataの構造が違う場合は、下の <span class="badge">findChart()</span> だけ調整すればOKです。
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="songData.js"></script>
+<script>
+/**
+ * =========================================================
+ * 1) レート計算：単曲ページ(index.html)と同じ式を採用
+ * =========================================================
+ * 入力: level(譜面定数), score(0..1000000)
+ * 出力: 単曲レート（あなたの単曲ページの rate と同じ）
+ */
+function calcRateByLevelAndScore(level, score){
+  let s = Number(score);
+  if(Number.isNaN(s)) return NaN;
+  s = Math.max(0, Math.min(1000000, s));
+
+  const lv = Number(level);
+  if(!Number.isFinite(lv)) return NaN;
+
+  let rate = 0;
+
+  if(s < 800000){
+    rate = 0;
+  }else if(s < 970000){
+    const adj = (s - 800000) / 170000;
+    rate = (lv * adj) / 34;
+  }else{
+    let adj = 0;
+    if(s < 990000) adj = (s - 970000) / 20000;
+    else if(s < 995000) adj = 1 + (s - 990000) / 10000;
+    else if(s < 999000) adj = 1.5 + (s - 995000) / 8000;
+    else if(s < 1000000) adj = 2 + (s - 999000) / 10000;
+    else adj = 2.1;
+
+    rate = (lv + adj) / 34;
+  }
+
+  return rate;
+}
+
+/**
+ * =========================================================
+ * 2) songData から「曲名 + 難易度名」→「Lv」を引く
+ * =========================================================
+ * ここはあなたの songData.js の構造に依存するので、
+ * 今の songData に合わせて調整する場所はこの関数だけ。
+ *
+ * ✅ まずは下の3パターンを試す：
+ *  A) songData[title][diff] = level
+ *  B) songData[title].charts = [{diffName, level}, ...]
+ *  C) songData が配列で [{title, diffName, level}, ...]
+ */
+function normalize(s){
+  return String(s ?? "").trim().toUpperCase().replace(/\s+/g,"");
+}
+
+function findChart(songTitle, diffName){
+  if(typeof window.songData === "undefined") return null;
+
+  const t = songTitle?.trim();
+  const d = diffName?.trim();
+  if(!t || !d) return null;
+
+  const sd = window.songData;
+
+  // A) songData[title][diff] = level or object
+  if(sd[t] && typeof sd[t] === "object"){
+    const obj = sd[t];
+    // 直キー一致
+    if(obj[d] != null){
+      const v = obj[d];
+      const lv = (typeof v === "number") ? v : (v.level ?? v.const ?? v.lv);
+      if(Number.isFinite(Number(lv))) return { level: Number(lv) };
+    }
+    // 難易度名の正規化一致
+    for(const k of Object.keys(obj)){
+      if(normalize(k) === normalize(d)){
+        const v = obj[k];
+        const lv = (typeof v === "number") ? v : (v.level ?? v.const ?? v.lv);
+        if(Number.isFinite(Number(lv))) return { level: Number(lv) };
+      }
+    }
+
+    // B) songData[title].charts
+    if(Array.isArray(obj.charts)){
+      const hit = obj.charts.find(c => normalize(c.diffName) === normalize(d));
+      if(hit && Number.isFinite(Number(hit.level))) return { level: Number(hit.level) };
+    }
+  }
+
+  // C) songData が配列
+  if(Array.isArray(sd)){
+    const hit = sd.find(x => (x.title===t || x.song===t || x.name===t) && normalize(x.diffName)===normalize(d));
+    const lv = hit?.level ?? hit?.const ?? hit?.lv;
+    if(hit && Number.isFinite(Number(lv))) return { level: Number(lv) };
+  }
+
+  return null;
+}
+
+function diffTagClass(diffName){
+  const d = normalize(diffName);
+  if(d.includes("MASTER")) return "master";
+  if(d.includes("INSANITY")) return "insanity";
+  if(d.includes("RAVAGE")) return "ravage";
+  return "";
+}
+
+/**
+ * =========================================================
+ * 3) CSV パース（簡易: ダブルクォート対応）
+ * =========================================================
+ */
+function parseCSVText(text){
+  const rows = [];
+  let cur = "", inQ = false, row = [];
+  for(let i=0; i<text.length; i++){
+    const ch = text[i];
+    if(ch === '"'){
+      if(inQ && text[i+1] === '"'){ cur += '"'; i++; }
+      else inQ = !inQ;
+    }else if(!inQ && ch === ","){
+      row.push(cur); cur = "";
+    }else if(!inQ && (ch === "\n" || ch === "\r")){
+      if(ch === "\r" && text[i+1] === "\n") i++;
+      row.push(cur); cur = "";
+      if(row.some(v => String(v).trim() !== "")) rows.push(row);
+      row = [];
+    }else{
+      cur += ch;
+    }
+  }
+  row.push(cur);
+  if(row.some(v => String(v).trim() !== "")) rows.push(row);
+  return rows;
+}
+
+function extractEntries(rows){
+  const out = [];
+  for(const r of rows){
+    if(!r || r.length < 2) continue;
+    const songTitle = String(r[0] ?? "").trim();
+    const diffName  = String(r[1] ?? "").trim();
+    if(!songTitle || !diffName) continue;
+
+    let score = null;
+    for(let i=r.length-1; i>=0; i--){
+      const v = String(r[i] ?? "").trim().replace(/,/g,"");
+      if(/^\d+$/.test(v)){ score = Number(v); break; }
+    }
+    if(score == null) continue;
+
+    out.push({ songTitle, diffName, score });
+  }
+  return out;
+}
+
+function fmtScore(n){
+  const x = Number(n);
+  if(!Number.isFinite(x)) return "-";
+  return x.toLocaleString("ja-JP");
+}
+function fmtRate(n){
+  const x = Number(n);
+  if(!Number.isFinite(x)) return "-";
+  return x.toFixed(4);
+}
+function escapeHtml(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/**
+ * =========================================================
+ * 4) 候補曲：40位更新に必要なスコア（二分探索）
+ * =========================================================
+ */
+function estimateRequiredScore({ targetRate, level, currentScore }){
+  if(!Number.isFinite(targetRate)) return null;
+  const maxScore = 1010000; // 上限が違うなら調整
+  const rateAt = (s)=> calcRateByLevelAndScore(level, s);
+
+  const cur = rateAt(currentScore);
+  if(cur >= targetRate) return { neededScore: currentScore, newRate: cur };
+
+  const maxR = rateAt(maxScore);
+  if(!Number.isFinite(maxR) || maxR < targetRate) return null;
+
+  let lo = Math.max(0, currentScore);
+  let hi = maxScore;
+  for(let i=0; i<28; i++){
+    const mid = Math.floor((lo + hi) / 2);
+    const r = rateAt(mid);
+    if(r >= targetRate) hi = mid;
+    else lo = mid + 1;
+  }
+  return { neededScore: hi, newRate: rateAt(hi) };
+}
+
+/**
+ * =========================================================
+ * 5) UI
+ * =========================================================
+ */
+const els = {
+  file: document.getElementById("csvFile"),
+  text: document.getElementById("csvText"),
+  btnSample: document.getElementById("btnSample"),
+  btnClear: document.getElementById("btnClear"),
+  btnParse: document.getElementById("btnParse"),
+  chkIgnoreUnknown: document.getElementById("chkIgnoreUnknown"),
+  chkAuto: document.getElementById("chkAuto"),
+  log: document.getElementById("parseLog"),
+
+  sumRate: document.getElementById("sumRate"),
+  avgRate: document.getElementById("avgRate"),
+  cutRate: document.getElementById("cutRate"),
+  countInfo: document.getElementById("countInfo"),
+
+  bestBody: document.querySelector("#best40Table tbody"),
+  candBody: document.querySelector("#candidatesTable tbody"),
+};
+
+function render(best40, candidates, cutRate){
+  els.bestBody.innerHTML = "";
+  els.candBody.innerHTML = "";
+
+  best40.forEach((x, i)=>{
+    const tr = document.createElement("tr");
+    const tagCls = diffTagClass(x.diffName);
+    tr.innerHTML = `
+      <td class="center">${i+1}</td>
+      <td>${escapeHtml(x.songTitle)}</td>
+      <td><span class="tag ${tagCls}">${escapeHtml(x.diffName)}</span></td>
+      <td class="center">${x.level ?? "-"}</td>
+      <td class="right">${fmtScore(x.score)}</td>
+      <td class="right">${fmtRate(x.rate)}</td>
+    `;
+    els.bestBody.appendChild(tr);
+  });
+
+  candidates.forEach((x, i)=>{
+    const tr = document.createElement("tr");
+    const tagCls = diffTagClass(x.diffName);
+    const needScore = x.needed ? fmtScore(x.needed.neededScore) : "-";
+    const newRate = x.needed ? fmtRate(x.needed.newRate) : "-";
+    tr.innerHTML = `
+      <td class="center">${i+1}</td>
+      <td>${escapeHtml(x.songTitle)}</td>
+      <td><span class="tag ${tagCls}">${escapeHtml(x.diffName)}</span></td>
+      <td class="center">${x.level ?? "-"}</td>
+      <td class="right">${fmtScore(x.score)}</td>
+      <td class="right">${fmtRate(x.rate)}</td>
+      <td class="right">${needScore}</td>
+      <td class="right">${newRate}</td>
+    `;
+    els.candBody.appendChild(tr);
+  });
+
+  const sum = best40.reduce((a,b)=> a + (Number(b.rate)||0), 0);
+  const avg = best40.length ? sum / best40.length : 0;
+
+  els.sumRate.textContent = fmtRate(sum);
+  els.avgRate.textContent = fmtRate(avg);
+  els.cutRate.textContent = Number.isFinite(cutRate) ? fmtRate(cutRate) : "-";
+  els.countInfo.textContent = `${best40.length} / ${best40.length + candidates.length}`;
+}
+
+function parseAndBuild(){
+  const text = els.text.value || "";
+  const rows = parseCSVText(text);
+  const entries = extractEntries(rows);
+
+  const ignoreUnknown = els.chkIgnoreUnknown.checked;
+
+  let unknown = 0;
+  const rated = [];
+
+  for(const e of entries){
+    const chart = findChart(e.songTitle, e.diffName);
+    if(!chart){
+      unknown++;
+      if(!ignoreUnknown){
+        rated.push({ ...e, level:null, rate:NaN, unknown:true });
+      }
+      continue;
+    }
+    const level = chart.level;
+    const rate = calcRateByLevelAndScore(level, e.score);
+    rated.push({ ...e, level, rate, unknown:false });
+  }
+
+  const ok = rated.filter(x => Number.isFinite(Number(x.rate)));
+  ok.sort((a,b)=> (Number(b.rate)||-1) - (Number(a.rate)||-1));
+
+  const best40 = ok.slice(0, 40);
+  const cutRate = best40.length ? Number(best40[Math.min(39, best40.length-1)].rate) : NaN;
+
+  // 候補（Best40外の上位80くらい）
+  const out = ok.slice(40, 120);
+  const candidates = out.map(x=>{
+    const needed = (best40.length === 40)
+      ? estimateRequiredScore({ targetRate: cutRate + 1e-10, level: x.level, currentScore: x.score })
+      : null;
+    return { ...x, needed };
+  });
+
+  render(best40, candidates, cutRate);
+
+  els.log.textContent =
+`CSV行数: ${rows.length}
+有効エントリ: ${entries.length}
+レート計算できた譜面: ${ok.length}
+songData未一致: ${unknown}
+Best40: ${best40.length}
+候補表示: ${candidates.length}`;
+}
+
+/* ===== イベント ===== */
+els.file.addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  const text = await f.text();
+  els.text.value = text;
+  if(els.chkAuto.checked) parseAndBuild();
+});
+
+els.text.addEventListener("input", ()=>{
+  if(els.chkAuto.checked) parseAndBuild();
+});
+
+els.btnParse.addEventListener("click", parseAndBuild);
+
+els.btnSample.addEventListener("click", ()=>{
+  els.text.value =
+`曲名,難易度名,何か,スコア
+"ARCANAA?","MASTER",x,995000
+"ARCANAA?","INSANITY",x,990000
+"ARCANAA?","RAVAGE",x,970000
+`;
+  if(els.chkAuto.checked) parseAndBuild();
+});
+
+els.btnClear.addEventListener("click", ()=>{
+  els.text.value = "";
+  els.bestBody.innerHTML = "";
+  els.candBody.innerHTML = "";
+  els.sumRate.textContent = "-";
+  els.avgRate.textContent = "-";
+  els.cutRate.textContent = "-";
+  els.countInfo.textContent = "-";
+  els.log.textContent = "未解析";
+});
+
+/* 初期表示 */
+els.log.textContent = "CSVを貼り付けるか、ファイル選択で自動更新します。";
+</script>
+</body>
+</html>
